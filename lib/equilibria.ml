@@ -39,7 +39,7 @@ module Make (G : Game.S) = struct
             let network = Network.build (Game.uncontribute (Game.uncontribute con j i) i j) ~f:G.edge_formation in
             let new_val_i = single_player_compute ~network ~cost i in
             let new_val_j = single_player_compute ~network ~cost j in
-            acc && (not (check_strict_improve current_val_i current_val_j new_val_i new_val_j))
+            acc && (not Float.(new_val_i > current_val_i || new_val_j > current_val_j))
           else
             let network = Network.build (Game.contribute (Game.contribute con j i) i j) ~f:G.edge_formation in
             let new_val_i = single_player_compute ~network ~cost i in
