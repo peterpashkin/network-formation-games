@@ -1,4 +1,4 @@
 module Make (G : Game.S) : sig
-    val check_nash : G.t -> cost:float -> strict:bool -> bool
+    val check_simple_nash : G.t -> cost:float -> strict:bool -> bool
     val pairwise_stability : G.t -> cost:float -> bool
 end

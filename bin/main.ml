@@ -21,7 +21,6 @@ let _chain sz =
     List.init sz ~f:(fun j ->j = i + 1)
   )
 
-
 let _star sz =
   List.init sz ~f:(fun i ->
     if i = sz-1 then
@@ -45,6 +44,6 @@ module UUNash = Equilibria.Make (Undirected_unilateral_game)
 module UBNash = Equilibria.Make (Undirected_bilateral_game)
 module DUNash = Equilibria.Make (Directed_unilateral_game)
 
-let () = UUNash.check_nash (_star 20) ~cost:0.8 ~strict:false |> printf "Is Nash equilibrium for Undirected Unilateral: %b\n"
-let () = DUNash.check_nash (_wheels 20) ~cost:25. ~strict:false |> printf "Is Nash equilibrium for Directed Unilateral: %b\n"
+let () = UUNash.check_simple_nash (_star 20) ~cost:1.2 ~strict:false |> printf "Is Nash equilibrium for Undirected Unilateral: %b\n"
+let () = DUNash.check_simple_nash (_wheels 20) ~cost:25. ~strict:false |> printf "Is Nash equilibrium for Directed Unilateral: %b\n"
 let () = UBNash.pairwise_stability (_star 20 |> two_sided) ~cost:0.8 |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"

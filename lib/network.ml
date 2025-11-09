@@ -52,10 +52,9 @@ let single_person_val ~f (g : t) (p : int) =
   List.fold tries ~init:0.0 ~f:(fun acc other ->
     acc +. f (dist g p other)
   )
+      
 
-let complete_val ~f (g : t)  =
-  List.foldi g ~init:0.0 ~f:(fun i acc row ->
-    List.foldi row ~init:acc ~f:(fun j acc _ ->
-      if j <= i then acc else
-      acc +. f (dist g i j))
+  let complete_val ~f (g : t)  =
+  List.init (List.length g) ~f:Fun.id |> List.fold ~init:0.0 ~f:(fun acc p ->
+    acc +. single_person_val ~f g p
   )

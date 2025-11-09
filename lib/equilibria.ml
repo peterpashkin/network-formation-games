@@ -4,7 +4,8 @@ module Make (G : Game.S) = struct
   let single_player_compute ~network ~cost player =
     Network.((single_person_val ~f:G.value_function network player) -. (Game.single_player_cost ~cost network player))
 
-  let check_nash (con : G.t) ~cost ~strict =
+    (* TODO not correct nash check, need to check all other action profiles *)
+  let check_simple_nash (con : G.t) ~cost ~strict =
     let current_network = Network.build con ~f:G.edge_formation in
     List.foldi con ~init:true ~f:( fun i acc row ->
       let current_val = single_player_compute ~network:current_network ~cost i in
