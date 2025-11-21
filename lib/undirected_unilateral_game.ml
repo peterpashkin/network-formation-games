@@ -1,5 +1,6 @@
 open Core
-type t = bool list list
+type t = bool array array
+
 let value_function (dist : int option) : float =
   match dist with
   | None -> -.Game.inf

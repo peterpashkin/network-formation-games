@@ -1,7 +1,7 @@
-type t = bool list list
+type t = bool array array
 
 val init : int -> t
-val build : bool list list -> f:(bool -> bool -> bool) -> t
-val add_edge : t -> int -> int -> t
+val build : bool array array -> f:(bool -> bool -> bool) -> t
+val add_edge : t -> int -> int -> unit
 val single_person_val : f:(int option -> float) -> t -> int -> float
-val complete_val : f:(int option -> float)  -> t -> float
+val complete_val : f:(int option -> float) -> t -> float
