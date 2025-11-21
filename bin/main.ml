@@ -87,7 +87,7 @@ module DUNash = Equilibria.Make (Directed_unilateral_game)
 
 (* let () = UUNash.check_simple_nash (_star 20) ~cost:1.2 ~strict:false |> printf "Is Nash equilibrium for Undirected Unilateral: %b\n"
 let () = DUNash.check_simple_nash (_wheels 20) ~cost:25. ~strict:false |> printf "Is Nash equilibrium for Directed Unilateral: %b\n" *)
-let () = UBNash.pairwise_stability (_star 10 |> two_sided) ~cost:0.92 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
+let () = UBNash.pairwise_stability (_star 20 |> two_sided) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
 
 let () = UBNash.pairwise_stability (_common_bilateral ~sz:10 ~c_sz:0 ~n_c:0 ~alpha:0) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
-let () = UBNash.pairwise_stability (_empty 10) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
+let () = UBNash.pairwise_stability (_empty 100) ~cost:72. |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
