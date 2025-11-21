@@ -1,7 +1,7 @@
 open Core
 type t = bool array array
 
-let discount_factor : float = 0.9
+let discount_factor : float = 0.4
 
 let value_function (dist : int option) =
   match dist with

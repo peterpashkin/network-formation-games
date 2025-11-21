@@ -5,6 +5,9 @@ type t = bool array array
 let add_edge (g: t) (src: int) (dst: int) : unit =
   g.(src).(dst) <- true
 
+let remove_edge (g: t) (src: int) (dst: int) : unit =
+  g.(src).(dst) <- false
+
 let init (size : int) : t =
   Array.make_matrix ~dimx:size ~dimy:size false
 
