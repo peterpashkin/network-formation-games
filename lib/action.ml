@@ -1,0 +1,1 @@
+type t = Sponsor of int * int | Drop of int * int | None
