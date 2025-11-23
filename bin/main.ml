@@ -42,19 +42,19 @@ let _empty sz =
   Array.make_matrix ~dimx:sz ~dimy:sz false
 
 
-let rec add_random_edges g edges_added total_edges sz =
+let rec add_random_edges g edges_added total_edges sz ~single =
   if edges_added >= total_edges then g
   else
     let src = Random.int sz in
     let dst = Random.int sz in
-    if src = dst then add_random_edges g edges_added total_edges sz
+    if src = dst then add_random_edges g edges_added total_edges sz ~single
     else
       if g.(src).(dst) then
-        add_random_edges g edges_added total_edges sz
+        add_random_edges g edges_added total_edges sz ~single
       else (
         Game.contribute g src dst;
-        Game.contribute g dst src;
-        add_random_edges g (edges_added + 1) total_edges sz
+        if not single then Game.contribute g dst src;
+        add_random_edges g (edges_added + 1) total_edges sz ~single
       )
 
 (* Create [n_c] cliques of size [c_sz] and graph of size [sz] 
@@ -102,7 +102,7 @@ let full_cliques ~sz ~c_sz =
 let sparsely_connected_cliques ~sz ~c_sz ~alpha =
   let g = full_cliques ~sz ~c_sz in
   let total_edges = sz * alpha in
-  add_random_edges g 0 total_edges sz
+  add_random_edges g 0 total_edges sz ~single:false
 
 
 let some_stars ~sz ~star_sz =
@@ -122,7 +122,7 @@ let some_stars ~sz ~star_sz =
 let connected_stars ~sz ~star_sz ~alpha =
   let g = some_stars ~sz ~star_sz in
   let total_edges = sz * alpha in
-  add_random_edges g 0 total_edges sz
+  add_random_edges g 0 total_edges sz ~single:true
 
 
 let print_graph g =
@@ -144,36 +144,32 @@ module DUNash = Equilibria.Make (Directed_unilateral_game)
 
 
 
-let _sim_bilateral () =
+let _sim_bilateral g =
   let cost = 0.2 in
   let module G = Undirected_bilateral_game in
   let module N = UBNash in
-  let sparse_clique = sparsely_connected_cliques ~sz:20 ~c_sz:4 ~alpha:1 in
 
-  let first_cost = N.all_player_compute ~cost ~network:(Network.build sparse_clique ~f:G.edge_formation) in
+  let first_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
   
-  let _other = Simulation.run_undirected_bilateral_sim sparse_clique ~cost ~runs:20 in
-  let () = print_graph sparse_clique in
+  let _other = Simulation.run_undirected_bilateral_sim g ~cost ~runs:10 in
+  let () = print_graph g in
   
-  let next_cost = N.all_player_compute ~cost ~network:(Network.build sparse_clique ~f:G.edge_formation) in
-  let () = N.pairwise_stability sparse_clique ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
+  let next_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
+  let () = N.pairwise_stability g ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
   let () = printf "Initial cost: %f, Final cost: %f\n" first_cost next_cost in
   ()
 
 
-let _sim_unilateral () =
-  let cost = 0.9 in
+let _sim_unilateral g =
+  let cost = 0.1 in
   let module G = Undirected_unilateral_game in
   let module N = UUNash in
-  let sparse_stars = connected_stars ~sz:20 ~star_sz:4 ~alpha:1 in
-
-  let first_cost = N.all_player_compute ~cost ~network:(Network.build sparse_stars ~f:G.edge_formation) in
+  let first_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
+  let _other = Simulation.run_undirected_unilateral_sim g ~cost ~runs:1000 in
+  let () = print_graph g in
   
-  let _other = Simulation.run_undirected_unilateral_sim sparse_stars ~cost ~runs:20 in
-  let () = print_graph sparse_stars in
-  
-  let next_cost = N.all_player_compute ~cost ~network:(Network.build sparse_stars ~f:G.edge_formation) in
-  let () = N.pairwise_stability sparse_stars ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
+  let next_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
+  let () = N.check_simple_nash g ~cost ~strict:false |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
   let () = printf "Initial cost: %f, Final cost: %f\n" first_cost next_cost in
   ()
 
@@ -181,7 +177,10 @@ let () = UUNash.check_simple_nash (_star 20) ~cost:1.2 ~strict:false |> (functio
 let () = DUNash.check_simple_nash (_wheels 20) ~cost:25. ~strict:false |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Directed Unilateral: %b\n"
 let () = UBNash.pairwise_stability (_star 20 |> two_sided) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
 
-
+let sparse_star = connected_stars ~sz:9 ~star_sz:3 ~alpha:1
+let _sparse_clique = sparsely_connected_cliques ~sz:20 ~c_sz:4 ~alpha:1
+let () = _sim_unilateral sparse_star
+let () = _sim_bilateral _sparse_clique
 
 (* let () = UBNash.pairwise_stability (_empty 1500) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n" *)
 (* let () = UBNash.pairwise_stability (_common_bilateral ~sz:200 ~c_sz:10 ~n_c:5 ~alpha:1) ~cost:1.5 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n" *)

@@ -63,8 +63,8 @@ module Make (G : Game.S) = struct
       let new_val_j = single_player_compute ~network:current_network ~cost j in
       Network.add_edge current_network j i;
       Network.add_edge current_network i j;
-      if (not Float.(new_val_i > current_val_i || new_val_j > current_val_j))
-        then Action.None else Action.Drop(i,j)
+      if (Float.(new_val_i > current_val_i || new_val_j > current_val_j))
+        then Action.Drop(i,j) else Action.None
     ) else (
       Network.add_edge current_network j i;
       Network.add_edge current_network i j;
