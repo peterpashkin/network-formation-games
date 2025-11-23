@@ -21,25 +21,29 @@ module Make (G : Game.S) = struct
         Game.uncontribute con_copy i j;
         let network = Network.build con_copy ~f:G.edge_formation in
         let nv2 = single_player_compute ~network ~cost i in
-        ((if strict then Float.(>) else Float.(>=)) current_val nv2)
+        if ((if strict then Float.(>) else Float.(>=)) current_val nv2)
+        then Action.None else Action.Drop(i,j)
       ) else (
         let con_copy = Array.map con ~f:Array.copy in
         Game.contribute con_copy i j;
         let network = Network.build con_copy ~f:G.edge_formation in
         let nv1 = single_player_compute ~network ~cost i in
-        ((if strict then Float.(>) else Float.(>=)) current_val nv1)
+        if ((if strict then Float.(>) else Float.(>=)) current_val nv1)
+        then Action.None else Action.Sponsor(i,j)
       )
-    ) else true
+    ) else Action.None
 
 
   let check_simple_nash (con : G.t) ~cost ~strict =
     let current_network = Network.build con ~f:G.edge_formation in
     let n = Array.length con in
-    let acc = ref true in
+    let acc = ref Action.None in
     for i = 0 to n - 1 do
       let current_val = single_player_compute ~network:current_network ~cost i in
       for j = 0 to n - 1 do
-        acc := !acc && (check_nash_pair con ~cost ~strict i j ~current_val)
+        match !acc with
+        | Action.None -> acc := check_nash_pair con ~cost ~strict i j ~current_val
+        | _ -> ()
       done
     done;
     !acc
