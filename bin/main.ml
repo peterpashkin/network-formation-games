@@ -148,11 +148,13 @@ let sparse_clique = sparsely_connected_cliques ~sz:20 ~c_sz:4 ~alpha:1
 (* let () = UBNash.pairwise_stability sparse_clique ~cost:1.5 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n" *)
 (* let _new_graph = Simulation.run_undirected_bilateral_sim (_common_bilateral ~sz:200 ~c_sz:10 ~n_c:5 ~alpha:1) ~cost:1.5 ~runs:100 *)
 
-let first_cost = UBNash.all_player_compute ~cost:0.2 ~network:(Network.build sparse_clique ~f:Undirected_bilateral_game.edge_formation)
+let cost = 0.2
 
-let _other = Simulation.run_undirected_bilateral_sim sparse_clique ~cost:0.2 ~runs:2000
+let first_cost = UBNash.all_player_compute ~cost ~network:(Network.build sparse_clique ~f:Undirected_bilateral_game.edge_formation)
+
+let _other = Simulation.run_undirected_bilateral_sim sparse_clique ~cost ~runs:2000
 let () = print_graph sparse_clique
 
-let next_cost = UBNash.all_player_compute ~cost:0.2 ~network:(Network.build sparse_clique ~f:Undirected_bilateral_game.edge_formation)
-let () = UBNash.pairwise_stability sparse_clique ~cost:0.2 |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n"
+let next_cost = UBNash.all_player_compute ~cost ~network:(Network.build sparse_clique ~f:Undirected_bilateral_game.edge_formation)
+let () = UBNash.pairwise_stability sparse_clique ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n"
 let () = printf "Initial cost: %f, Final cost: %f\n" first_cost next_cost
