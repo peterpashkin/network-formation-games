@@ -50,7 +50,6 @@ let run_undirected_unilateral_sim (initial : Undirected_unilateral_game.t) ~(run
       aux (tries - 1) game
     | Action.Drop (src, dst) ->
       Game.uncontribute game src dst;
-      Game.uncontribute game dst src;
       aux (tries - 1) game
   in
   aux runs initial

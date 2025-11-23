@@ -125,13 +125,13 @@ let connected_stars ~sz ~star_sz ~alpha =
   add_random_edges g 0 total_edges sz ~single:true
 
 
-let print_graph g =
+let print_graph g ~uni =
   let n = Array.length g in
   (* for i = 0 to n - 1 do
     printf "%d\n" i; 
   done; *)
   for i = 0 to n - 1 do
-    for j = i+1 to n - 1 do
+    for j = (if uni then 0 else i+1) to n - 1 do
       if g.(i).(j) then
         printf "%d %d\n" i j
     done;
@@ -152,7 +152,7 @@ let _sim_bilateral g =
   let first_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
   
   let _other = Simulation.run_undirected_bilateral_sim g ~cost ~runs:10 in
-  let () = print_graph g in
+  let () = print_graph ~uni:false g in
   
   let next_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
   let () = N.pairwise_stability g ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
@@ -166,7 +166,7 @@ let _sim_unilateral g =
   let module N = UUNash in
   let first_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
   let _other = Simulation.run_undirected_unilateral_sim g ~cost ~runs:1000 in
-  let () = print_graph g in
+  let () = print_graph ~uni:true g in
   
   let next_cost = N.all_player_compute ~cost ~network:(Network.build g ~f:G.edge_formation) in
   let () = N.check_simple_nash g ~cost ~strict:false |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
@@ -174,13 +174,13 @@ let _sim_unilateral g =
   ()
 
 let () = UUNash.check_simple_nash (_star 20) ~cost:1.2 ~strict:false |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Unilateral: %b\n"
-let () = DUNash.check_simple_nash (_wheels 20) ~cost:25. ~strict:false |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Directed Unilateral: %b\n"
+let () = DUNash.check_simple_nash (_wheels 20) ~cost:25. ~strict:true |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Directed Unilateral: %b\n"
 let () = UBNash.pairwise_stability (_star 20 |> two_sided) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n"
 
 let sparse_star = connected_stars ~sz:9 ~star_sz:3 ~alpha:1
 let _sparse_clique = sparsely_connected_cliques ~sz:20 ~c_sz:4 ~alpha:1
 let () = _sim_unilateral sparse_star
-let () = _sim_bilateral _sparse_clique
+(* let () = _sim_bilateral _sparse_clique *)
 
 (* let () = UBNash.pairwise_stability (_empty 1500) ~cost:0.8 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n" *)
 (* let () = UBNash.pairwise_stability (_common_bilateral ~sz:200 ~c_sz:10 ~n_c:5 ~alpha:1) ~cost:1.5 |> (function Action.None -> true | _ -> false) |> printf "Is Nash equilibrium for Undirected Bilateral: %b\n" *)
