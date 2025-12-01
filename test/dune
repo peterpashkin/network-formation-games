@@ -1,2 +1,3 @@
 (test
- (name test_sims))
+ (name test_sims)
+ (libraries sims core))

@@ -1,8 +1,8 @@
 open! Core
 
-let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs : int) ~cost : Undirected_bilateral_game.t =
+let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs : int) ~cost =
   let rec aux (tries : int) game =
-    if tries = 0 then game
+    if tries = 0 then ()
     else
     let current_network = Network.build game ~f:Undirected_bilateral_game.edge_formation in
     let module E = Equilibria.Make(Undirected_bilateral_game) in
@@ -28,9 +28,9 @@ let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs 
   aux runs initial
 
 
-let run_undirected_unilateral_sim (initial : Undirected_unilateral_game.t) ~(runs : int) ~cost : Undirected_unilateral_game.t =
+let run_undirected_unilateral_sim (initial : Undirected_unilateral_game.t) ~(runs : int) ~cost =
   let rec aux (tries : int) game =
-    if tries = 0 then game
+    if tries = 0 then ()
     else
     let current_network = Network.build game ~f:Undirected_unilateral_game.edge_formation in
     let module E = Equilibria.Make(Undirected_unilateral_game) in
