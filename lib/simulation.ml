@@ -1,6 +1,6 @@
 open! Core
 
-let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs : int) ~cost =
+let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs : int) ~cost ~limit =
   let rec aux (tries : int) game =
     if tries = 0 then ()
     else
@@ -9,18 +9,23 @@ let run_undirected_bilateral_sim (initial : Undirected_bilateral_game.t) ~(runs 
     let n = Array.length game in
     let i = Random.int n in
     let j = Random.int n in
+    let limit = Option.value limit ~default:n in
     if i = j then aux tries game
     else
-      match E.check_pairwise_stable game ~cost i j current_network with
+      (match E.check_pairwise_stable game ~cost i j current_network with
       | Action.None -> aux (tries - 1) game
       | Action.Sponsor (src, dst) ->
-        Game.contribute game src dst;
-        Game.contribute game dst src;
-        aux (tries - 1) game
+        if (Network.neighbours current_network src |> List.length) >= limit
+          || (Network.neighbours current_network dst |> List.length) >= limit then (aux (tries - 1) game)
+        else (
+          Game.contribute game src dst;
+          Game.contribute game dst src;
+          aux (tries - 1) game
+        )
       | Action.Drop (src, dst) ->
         Game.uncontribute game src dst;
         Game.uncontribute game dst src;
-        aux (tries - 1) game
+        aux (tries - 1) game)
   in
   aux runs initial
 

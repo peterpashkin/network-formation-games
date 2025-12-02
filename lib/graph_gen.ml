@@ -98,9 +98,8 @@ let full_cliques ~sz ~c_sz =
 
 
 
-let sparsely_connected_cliques ~sz ~c_sz ~alpha =
+let sparsely_connected_cliques ~sz ~c_sz ~total_edges =
   let g = full_cliques ~sz ~c_sz in
-  let total_edges = sz * alpha in
   add_random_edges g 0 total_edges sz ~single:false
 
 

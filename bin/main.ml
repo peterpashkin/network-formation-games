@@ -26,14 +26,14 @@ let sim_unilateral g ~cost =
   let () = printf "Initial cost: %f, Final cost: %f\n" first_cost next_cost in
   ()
 
-let sim_bilateral g ~cost =
+let sim_bilateral g ~cost ~limit =
   let module G = Undirected_bilateral_game in
   let module N = UBNash in
 
   let first_cost = N.all_player_compute ~cost ~game:g ~network:(Network.build g ~f:G.edge_formation) in
   let () = Graph_gen.print_graph ~uni:false g in
   add_new_lines 5;
-  let () = Simulation.run_undirected_bilateral_sim g ~cost ~runs in
+  let () = Simulation.run_undirected_bilateral_sim g ~cost ~runs ~limit in
   let () = Graph_gen.print_graph ~uni:false g in
   let next_cost = N.all_player_compute ~cost ~game:g ~network:(Network.build g ~f:G.edge_formation) in
   let () = N.pairwise_stability g ~cost |> (function Action.None -> true | _ -> false) |> printf "Iterated Graph is Nash: %b\n" in
@@ -43,19 +43,17 @@ let sim_bilateral g ~cost =
 
 
 let cool_stars = Graph_gen.connected_stars ~sz:9 ~star_sz:3 ~total_edges:4
-let cool_cliques = Graph_gen.sparsely_connected_cliques ~sz:20 ~c_sz:5 ~alpha:1
+let cool_cliques = Graph_gen.sparsely_connected_cliques ~sz:9 ~c_sz:3 ~total_edges:4
 
-let comp = Graph_gen.complete 3
-let str = Graph_gen.star 3
+let comp = Graph_gen.complete 9
+let str = Graph_gen.star 9
+let emp = Graph_gen.empty 9
 
-let() = sim_bilateral cool_cliques ~cost:2.
-let () = sim_unilateral cool_stars ~cost:1.5
+let cost = 0.2
 
+let () = sim_unilateral cool_stars ~cost
+let() = sim_bilateral cool_cliques ~cost ~limit:None
 
-
-let () = Graph_gen.print_graph comp ~uni:true
-let () = add_new_lines 4
-let () = Graph_gen.print_graph str ~uni:true
-
-let () = printf "\n%f\n" (UUNash.all_player_compute ~cost:10. ~game:comp ~network:(Network.build comp ~f:Undirected_unilateral_game.edge_formation))
-let () = printf "\n%f\n" (UUNash.all_player_compute ~cost:10. ~game:str ~network:(Network.build str ~f:Undirected_unilateral_game.edge_formation))
+let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:(comp |> Graph_gen.two_sided) ~network:(Network.build (comp |> Graph_gen.two_sided) ~f:Undirected_bilateral_game.edge_formation))
+let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:(str |> Graph_gen.two_sided) ~network:(Network.build (str |> Graph_gen.two_sided) ~f:Undirected_bilateral_game.edge_formation))
+let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:emp ~network:(Network.build emp ~f:Undirected_bilateral_game.edge_formation))
