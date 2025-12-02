@@ -2,47 +2,47 @@ open Core
 
 module Make (G : Game.S) = struct
 
-  let single_player_compute ~network ~cost player =
-    Network.((single_person_val ~f:G.value_function network player) -. (Game.single_player_cost ~cost network player))
+  let single_player_compute ~game ~network ~cost player =
+    Network.((single_person_val ~f:G.value_function network player) -. (Game.single_player_cost ~cost game player))
 
-  let all_player_compute ~network ~cost =
-    let n = Array.length network in
+  let all_player_compute ~game ~network ~cost =
+    let n = Array.length game in
     let rec aux i acc =
       if i = n then acc
-      else aux (i + 1) (acc +. single_player_compute ~network ~cost i)
+      else aux (i + 1) (acc +. single_player_compute ~network ~game ~cost i)
     in
     aux 0 0.0
 
 
-  let check_nash_pair (con: G.t) ~cost ~strict ~current_val i j  =
+  let check_nash_pair (game: G.t) ~cost ~strict ~current_val i j  =
     if i <> j then (
-      if con.(i).(j) then (
-        let con_copy = Array.map con ~f:Array.copy in
-        Game.uncontribute con_copy i j;
-        let network = Network.build con_copy ~f:G.edge_formation in
-        let nv2 = single_player_compute ~network ~cost i in
+      if game.(i).(j) then (
+        let game_copy = Array.map game ~f:Array.copy in
+        Game.uncontribute game_copy i j;
+        let network = Network.build game_copy ~f:G.edge_formation in
+        let nv2 = single_player_compute ~network ~game:game_copy ~cost i in
         if ((if strict then Float.(>) else Float.(>=)) current_val nv2)
         then Action.None else Action.Drop(i,j)
       ) else (
-        let con_copy = Array.map con ~f:Array.copy in
-        Game.contribute con_copy i j;
-        let network = Network.build con_copy ~f:G.edge_formation in
-        let nv1 = single_player_compute ~network ~cost i in
+        let game_copy = Array.map game ~f:Array.copy in
+        Game.contribute game_copy i j;
+        let network = Network.build game_copy ~f:G.edge_formation in
+        let nv1 = single_player_compute ~network ~game:game_copy ~cost i in
         if ((if strict then Float.(>) else Float.(>=)) current_val nv1)
         then Action.None else Action.Sponsor(i,j)
       )
     ) else Action.None
 
 
-  let check_simple_nash (con : G.t) ~cost ~strict =
-    let current_network = Network.build con ~f:G.edge_formation in
-    let n = Array.length con in
+  let check_simple_nash (game : G.t) ~cost ~strict =
+    let current_network = Network.build game ~f:G.edge_formation in
+    let n = Array.length game in
     let acc = ref Action.None in
     for i = 0 to n - 1 do
-      let current_val = single_player_compute ~network:current_network ~cost i in
+      let current_val = single_player_compute ~game ~network:current_network ~cost i in
       for j = 0 to n - 1 do
         match !acc with
-        | Action.None -> acc := check_nash_pair con ~cost ~strict i j ~current_val
+        | Action.None -> acc := check_nash_pair game ~cost ~strict i j ~current_val
         | _ -> ()
       done
     done;
@@ -52,15 +52,19 @@ module Make (G : Game.S) = struct
     let open Float in
     nvi > cvi && nvj >= cvj || nvi >= cvi && nvj > cvj
 
-  let check_pairwise_stable (con : G.t) ~cost i j (current_network : Network.t) : Action.t =
+  let check_pairwise_stable (game : G.t) ~cost i j (current_network : Network.t) : Action.t =
     if i = j then None else
-    let current_val_i = single_player_compute ~network:current_network ~cost i in
-    let current_val_j = single_player_compute ~network:current_network ~cost j in
-    if con.(j).(i) then (
+    let current_val_i = single_player_compute ~game ~network:current_network ~cost i in
+    let current_val_j = single_player_compute ~game ~network:current_network ~cost j in
+    if game.(j).(i) then (
       Network.remove_edge current_network j i;
       Network.remove_edge current_network i j;
-      let new_val_i = single_player_compute ~network:current_network ~cost i in
-      let new_val_j = single_player_compute ~network:current_network ~cost j in
+      Game.uncontribute game i j;
+      Game.uncontribute game j i;
+      let new_val_i = single_player_compute ~game ~network:current_network ~cost i in
+      let new_val_j = single_player_compute ~game ~network:current_network ~cost j in
+      Game.contribute game i j;
+      Game.contribute game j i;
       Network.add_edge current_network j i;
       Network.add_edge current_network i j;
       if (Float.(new_val_i > current_val_i || new_val_j > current_val_j))
@@ -68,8 +72,12 @@ module Make (G : Game.S) = struct
     ) else (
       Network.add_edge current_network j i;
       Network.add_edge current_network i j;
-      let new_val_i = single_player_compute ~network:current_network ~cost i in
-      let new_val_j = single_player_compute ~network:current_network ~cost j in
+      Game.contribute game i j;
+      Game.contribute game j i;
+      let new_val_i = single_player_compute ~game ~network:current_network ~cost i in
+      let new_val_j = single_player_compute ~game ~network:current_network ~cost j in
+      Game.uncontribute game i j;
+      Game.uncontribute game j i;
       Network.remove_edge current_network j i;
       Network.remove_edge current_network i j;
       if (not (check_strict_improve current_val_i current_val_j new_val_i new_val_j)) then Action.None else Action.Sponsor (i,j)

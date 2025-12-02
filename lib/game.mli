@@ -7,5 +7,4 @@ val inf : float
 val contribute : bool array array -> int -> int -> unit
 val uncontribute : bool array array -> int -> int -> unit
 val single_player_cost : cost:float -> bool array array -> int -> float
-val all_player_cost : cost:float -> bool array array -> float
 

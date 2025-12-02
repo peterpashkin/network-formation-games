@@ -118,9 +118,8 @@ let some_stars ~sz ~star_sz =
   aux init 0
 
 
-let connected_stars ~sz ~star_sz ~alpha =
+let connected_stars ~sz ~star_sz ~total_edges =
   let g = some_stars ~sz ~star_sz in
-  let total_edges = sz * alpha in
   add_random_edges g 0 total_edges sz ~single:true
 
 

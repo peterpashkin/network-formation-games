@@ -17,7 +17,3 @@ let uncontribute (con : bool array array) i j =
 let single_player_cost ~(cost : float) (con : bool array array) (p : int) =
   Array.fold con.(p) ~init:0.0 ~f:(fun acc v -> if v then acc +. cost else acc)
 
-let all_player_cost ~(cost : float) (con : bool array array) =
-  Array.foldi con ~init:0.0 ~f:(fun i acc _ ->
-    acc +. (single_player_cost ~cost con i)
-  )
