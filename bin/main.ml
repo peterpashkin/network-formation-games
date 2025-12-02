@@ -40,20 +40,31 @@ let sim_bilateral g ~cost ~limit =
   let () = printf "Initial cost: %f, Final cost: %f\n" first_cost next_cost in
   ()
 
+let () = Random.set_state (Random.State.make [|42|])
 
 
-let cool_stars = Graph_gen.connected_stars ~sz:9 ~star_sz:3 ~total_edges:4
-let cool_cliques = Graph_gen.sparsely_connected_cliques ~sz:9 ~c_sz:3 ~total_edges:4
+let sz = 12
+let cool_stars = Graph_gen.connected_stars ~sz ~star_sz:4 ~total_edges:3
+let cool_cliques = Graph_gen.sparsely_connected_cliques ~sz ~c_sz:4 ~total_edges:3
 
-let comp = Graph_gen.complete 9
-let str = Graph_gen.star 9
-let emp = Graph_gen.empty 9
+let comp = Graph_gen.complete sz
+let str = Graph_gen.star sz
+let emp = Graph_gen.empty sz
 
-let cost = 0.2
+let cost = 0.5
+
 
 let () = sim_unilateral cool_stars ~cost
+
+let () = printf "\n%f\n" (UUNash.all_player_compute ~cost ~game:comp ~network:(Network.build comp ~f:Undirected_unilateral_game.edge_formation))
+let () = printf "\n%f\n" (UUNash.all_player_compute ~cost ~game:str ~network:(Network.build str ~f:Undirected_unilateral_game.edge_formation))
+let () = printf "\n%f\n" (UUNash.all_player_compute ~cost ~game:emp ~network:(Network.build emp ~f:Undirected_unilateral_game.edge_formation))
+
 let() = sim_bilateral cool_cliques ~cost ~limit:None
 
 let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:(comp |> Graph_gen.two_sided) ~network:(Network.build (comp |> Graph_gen.two_sided) ~f:Undirected_bilateral_game.edge_formation))
 let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:(str |> Graph_gen.two_sided) ~network:(Network.build (str |> Graph_gen.two_sided) ~f:Undirected_bilateral_game.edge_formation))
 let () = printf "\n%f\n" (UBNash.all_player_compute ~cost ~game:emp ~network:(Network.build emp ~f:Undirected_bilateral_game.edge_formation))
+
+
+
