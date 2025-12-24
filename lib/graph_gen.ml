@@ -48,7 +48,7 @@ let rec add_random_edges g edges_added total_edges sz ~single =
     let dst = Random.int sz in
     if src = dst then add_random_edges g edges_added total_edges sz ~single
     else
-      if g.(src).(dst) then
+      if g.(src).(dst) || g.(dst).(src) then
         add_random_edges g edges_added total_edges sz ~single
       else (
         Game.contribute g src dst;

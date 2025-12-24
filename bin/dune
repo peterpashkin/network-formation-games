@@ -1,4 +1,5 @@
 (executable
  (public_name sims)
  (name main)
- (libraries sims core))
+ (libraries sims core)
+ (preprocess (pps ppx_let)))
